@@ -1,0 +1,27 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: #04040a;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  font-family: 'Courier New', monospace;
+}
+
+#wrapper {
+  /* Thin neon border around the canvas */
+  border: 1px solid #39ff1444;
+  box-shadow:
+    0 0 20px #39ff1422,
+    0 0 60px #39ff1411;
+  line-height: 0;  /* Kills the default inline gap below canvas */
+}
+
+canvas {
+  display: block;
+}
