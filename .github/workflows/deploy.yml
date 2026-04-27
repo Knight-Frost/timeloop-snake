@@ -1,0 +1,74 @@
+name: Deploy to EC2
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  validate:
+    name: Validate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check for required files
+        run: |
+          test -f index.html || (echo "Missing index.html" && exit 1)
+          test -d src || (echo "Missing src/ directory" && exit 1)
+          echo "Required files present"
+
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    needs: validate
+    environment: production
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up SSH
+        env:
+          SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+        run: |
+          install -m 600 -D /dev/null ~/.ssh/id_rsa
+          echo "$SSH_KEY" > ~/.ssh/id_rsa
+          ssh-keyscan -H "$EC2_HOST" >> ~/.ssh/known_hosts
+
+      - name: Deploy files to EC2
+        # TODO: Implement the deployment step below.
+        # Your task: sync the project files to the EC2 web root.
+        #
+        # Available env vars (already bound from secrets):
+        #   $EC2_USER      - SSH user (e.g. ubuntu, ec2-user)
+        #   $EC2_HOST      - EC2 public IP or hostname
+        #   $WEB_ROOT      - Server path (e.g. /var/www/html)
+        #
+        # The files to deploy are in the current directory:
+        #   index.html  styles.css  src/
+        #
+        # Consider: should you rsync directly to the web root (simple, may
+        # have a brief partial-update window), or deploy to a temp directory
+        # and atomically swap with `mv` (zero-downtime, slightly more complex)?
+        #
+        # Replace the placeholder below with your rsync command(s):
+        env:
+          EC2_USER: ${{ secrets.EC2_USERNAME }}
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+          WEB_ROOT: ${{ secrets.EC2_WEB_ROOT }}
+        run: |
+          rsync -avz --delete \
+            --exclude='.git' \
+            --exclude='docs/' \
+            --exclude='.claude/' \
+            ./ "$EC2_USER@$EC2_HOST:$WEB_ROOT/"
+
+      - name: Verify deployment
+        env:
+          EC2_USER: ${{ secrets.EC2_USERNAME }}
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+          WEB_ROOT: ${{ secrets.EC2_WEB_ROOT }}
+        run: |
+          ssh "$EC2_USER@$EC2_HOST" \
+            "test -f $WEB_ROOT/index.html && echo 'Deploy verified' || (echo 'Deploy failed' && exit 1)"
