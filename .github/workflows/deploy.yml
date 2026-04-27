@@ -6,26 +6,46 @@ on:
   workflow_dispatch:
 
 jobs:
-  validate:
-    name: Validate
+  build:
+    name: Build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Check for required files
-        run: |
-          test -f index.html || (echo "Missing index.html" && exit 1)
-          test -d src || (echo "Missing src/ directory" && exit 1)
-          echo "Required files present"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: client/package.json
+
+      - name: Install client dependencies
+        run: npm ci
+        working-directory: client
+
+      - name: Build React app
+        run: npm run build
+        working-directory: client
+
+      - name: Upload dist artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: client-dist
+          path: client/dist/
 
   deploy:
     name: Deploy
     runs-on: ubuntu-latest
-    needs: validate
+    needs: build
     environment: production
 
     steps:
       - uses: actions/checkout@v4
+
+      - name: Download dist artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: client-dist
+          path: client/dist/
 
       - name: Set up SSH
         env:
@@ -36,39 +56,43 @@ jobs:
           echo "$SSH_KEY" > ~/.ssh/id_rsa
           ssh-keyscan -H "$EC2_HOST" >> ~/.ssh/known_hosts
 
-      - name: Deploy files to EC2
-        # TODO: Implement the deployment step below.
-        # Your task: sync the project files to the EC2 web root.
-        #
-        # Available env vars (already bound from secrets):
-        #   $EC2_USER      - SSH user (e.g. ubuntu, ec2-user)
-        #   $EC2_HOST      - EC2 public IP or hostname
-        #   $WEB_ROOT      - Server path (e.g. /var/www/html)
-        #
-        # The files to deploy are in the current directory:
-        #   index.html  styles.css  src/
-        #
-        # Consider: should you rsync directly to the web root (simple, may
-        # have a brief partial-update window), or deploy to a temp directory
-        # and atomically swap with `mv` (zero-downtime, slightly more complex)?
-        #
-        # Replace the placeholder below with your rsync command(s):
+      - name: Sync server code
         env:
           EC2_USER: ${{ secrets.EC2_USERNAME }}
           EC2_HOST: ${{ secrets.EC2_HOST }}
-          WEB_ROOT: ${{ secrets.EC2_WEB_ROOT }}
         run: |
           rsync -avz --delete \
             --exclude='.git' \
-            --exclude='docs/' \
-            --exclude='.claude/' \
-            ./ "$EC2_USER@$EC2_HOST:$WEB_ROOT/"
+            --exclude='client/node_modules' \
+            --exclude='server/node_modules' \
+            --exclude='client/dist' \
+            --exclude='.claude' \
+            --exclude='.env' \
+            ./ "$EC2_USER@$EC2_HOST:/home/ubuntu/timeloop-snake/"
+
+      - name: Sync built client
+        env:
+          EC2_USER: ${{ secrets.EC2_USERNAME }}
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+        run: |
+          rsync -avz --delete \
+            client/dist/ "$EC2_USER@$EC2_HOST:/home/ubuntu/timeloop-snake/client/dist/"
+
+      - name: Install server deps and restart PM2
+        env:
+          EC2_USER: ${{ secrets.EC2_USERNAME }}
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+        run: |
+          ssh "$EC2_USER@$EC2_HOST" bash << 'EOF'
+            cd /home/ubuntu/timeloop-snake/server
+            npm ci --omit=dev
+            pm2 restart timeloop-snake 2>/dev/null || pm2 start index.js --name timeloop-snake
+            pm2 save
+          EOF
 
       - name: Verify deployment
         env:
           EC2_USER: ${{ secrets.EC2_USERNAME }}
           EC2_HOST: ${{ secrets.EC2_HOST }}
-          WEB_ROOT: ${{ secrets.EC2_WEB_ROOT }}
         run: |
-          ssh "$EC2_USER@$EC2_HOST" \
-            "test -f $WEB_ROOT/index.html && echo 'Deploy verified' || (echo 'Deploy failed' && exit 1)"
+          ssh "$EC2_USER@$EC2_HOST" "pm2 show timeloop-snake | grep -q 'online' && echo 'App is online' || (echo 'App is not running' && exit 1)"
