@@ -14,7 +14,7 @@ export default function Game() {
   return (
     <div style={s.wrap}>
       <h2 style={s.h2}>Time Loop Snake</h2>
-      <p style={s.note}>Playing as {user?.email} — scores are saved automatically on game over.</p>
+      <p style={s.note}>Playing as {user?.email} - scores are saved automatically on game over.</p>
       <iframe
         src="/game/index.html"
         width="820"

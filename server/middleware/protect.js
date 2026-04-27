@@ -10,7 +10,7 @@ async function protect(req, res, next) {
   const token = auth.split(' ')[1];
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    // Always fetch role from DB — never trust the JWT payload for role
+    // Always fetch role from DB - never trust the JWT payload for role
     const user = await User.findByPk(decoded.id, {
       attributes: ['id', 'email', 'role']
     });

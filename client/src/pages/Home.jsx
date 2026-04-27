@@ -16,7 +16,7 @@ export default function Home() {
   return (
     <div style={s.wrap}>
       <h1 style={s.h1}>Time Loop Snake</h1>
-      <p style={s.sub}>Classic Snake with a twist — every 14 seconds a ghost of your past self appears and hunts you. Survive your own history.</p>
+      <p style={s.sub}>Classic Snake with a twist - every 14 seconds a ghost of your past self appears and hunts you. Survive your own history.</p>
       <div style={s.btnRow}>
         {user ? (
           <Link to="/play" style={s.btnPrimary}>Play Now</Link>

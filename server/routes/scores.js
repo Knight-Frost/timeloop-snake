@@ -21,7 +21,7 @@ router.get('/', async (req, res) => {
 
 // Submit a score (protected)
 router.post('/', protect, async (req, res) => {
-  // Destructure only the intended fields — never pass full req.body
+  // Destructure only the intended fields - never pass full req.body
   const { score, loops_survived } = req.body;
 
   if (typeof score !== 'number' || typeof loops_survived !== 'number') {
@@ -44,7 +44,7 @@ router.post('/', protect, async (req, res) => {
 router.delete('/:id', protect, async (req, res) => {
   try {
     const entry = await Score.findByPk(req.params.id);
-    // Return 404 whether it doesn't exist or isn't owned — prevents enumeration
+    // Return 404 whether it doesn't exist or isn't owned - prevents enumeration
     if (!entry || entry.userId !== req.user.id) {
       return res.status(404).json({ error: 'Score not found' });
     }

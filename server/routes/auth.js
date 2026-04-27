@@ -21,7 +21,7 @@ router.post('/register', async (req, res) => {
     if (existing) return res.status(400).json({ error: 'Email already in use' });
 
     const hash = await bcrypt.hash(password, 12);
-    // Destructure only intended fields — role is never accepted from req.body
+    // Destructure only intended fields - role is never accepted from req.body
     const user = await User.create({ email, password: hash });
 
     const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '7d' });

@@ -76,7 +76,7 @@ export default function Admin() {
             <tbody>
               {scores.map(entry => (
                 <tr key={entry.id}>
-                  <td style={s.td}>{entry.user?.email?.split('@')[0] ?? '—'}</td>
+                  <td style={s.td}>{entry.user?.email?.split('@')[0] ?? '-'}</td>
                   <td style={s.td}>{entry.score}</td>
                   <td style={s.td}>{entry.loops_survived}</td>
                   <td style={s.td}><button style={s.delBtn} onClick={() => deleteScore(entry.id)}>Delete</button></td>
