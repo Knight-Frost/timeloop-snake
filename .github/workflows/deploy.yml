@@ -87,7 +87,7 @@ jobs:
             chmod -R o+rX /home/ubuntu/timeloop-snake/client/dist
             cd /home/ubuntu/timeloop-snake/server
             npm ci --omit=dev
-            pm2 restart timeloop-snake 2>/dev/null || pm2 start index.js --name timeloop-snake
+            pm2 restart timeloop-snake --update-env 2>/dev/null || pm2 start index.js --name timeloop-snake
             pm2 save
           EOF
 

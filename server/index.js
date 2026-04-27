@@ -3,7 +3,9 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
+const bcrypt = require('bcryptjs');
 const { sequelize } = require('./config/db');
+const { User } = require('./models/User');
 const authRoutes = require('./routes/auth');
 const scoreRoutes = require('./routes/scores');
 const adminRoutes = require('./routes/admin');
@@ -29,6 +31,7 @@ app.use(cors({
   credentials: true
 }));
 
+app.set('trust proxy', 1);
 app.use(express.json());
 
 const authLimiter = rateLimit({
@@ -43,7 +46,24 @@ app.use('/api/admin', adminRoutes);
 
 const PORT = process.env.PORT || 3000;
 
-sequelize.sync().then(() => {
+async function seedAdmin() {
+  const { ADMIN_EMAIL, ADMIN_PASSWORD } = process.env;
+  if (!ADMIN_EMAIL || !ADMIN_PASSWORD) return;
+  const existing = await User.findOne({ where: { email: ADMIN_EMAIL } });
+  if (existing) {
+    if (existing.role !== 'admin') {
+      await existing.update({ role: 'admin' });
+      console.log(`Promoted ${ADMIN_EMAIL} to admin`);
+    }
+    return;
+  }
+  const hash = await bcrypt.hash(ADMIN_PASSWORD, 12);
+  await User.create({ email: ADMIN_EMAIL, password: hash, role: 'admin' });
+  console.log(`Admin account created: ${ADMIN_EMAIL}`);
+}
+
+sequelize.sync().then(async () => {
+  await seedAdmin();
   app.listen(PORT, '127.0.0.1', () =>
     console.log(`Server running on port ${PORT}`)
   );
