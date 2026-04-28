@@ -10,7 +10,7 @@ Replace with your deployed URL before submission.
 
 ## Quick Start (One Command)
 
-For graders or anyone who just wants to run it locally:
+For anyone who just wants to run it locally:
 
 ```bash
 git clone https://github.com/<your-username>/timeloop-snake-.git
