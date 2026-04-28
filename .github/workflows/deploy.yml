@@ -48,20 +48,33 @@ jobs:
           name: client-dist
           path: client/dist/
 
+      - name: Normalize EC2 connection secrets
+        env:
+          RAW_USER: ${{ secrets.EC2_USERNAME }}
+          RAW_HOST: ${{ secrets.EC2_HOST }}
+          RAW_ROOT: ${{ secrets.EC2_WEB_ROOT }}
+        run: |
+          USER_CLEAN=$(printf '%s' "$RAW_USER" | tr -d '[:space:]')
+          HOST_CLEAN=$(printf '%s' "$RAW_HOST" | tr -d '[:space:]')
+          ROOT_CLEAN=$(printf '%s' "$RAW_ROOT" | tr -d '[:space:]')
+          echo "::add-mask::$USER_CLEAN"
+          echo "::add-mask::$HOST_CLEAN"
+          echo "::add-mask::$ROOT_CLEAN"
+          {
+            echo "EC2_USER=$USER_CLEAN"
+            echo "EC2_HOST=$HOST_CLEAN"
+            echo "EC2_WEB_ROOT=$ROOT_CLEAN"
+          } >> "$GITHUB_ENV"
+
       - name: Set up SSH
         env:
           SSH_KEY: ${{ secrets.EC2_SSH_KEY }}
-          EC2_HOST: ${{ secrets.EC2_HOST }}
         run: |
           install -m 600 -D /dev/null ~/.ssh/id_rsa
           echo "$SSH_KEY" > ~/.ssh/id_rsa
           ssh-keyscan -H "$EC2_HOST" >> ~/.ssh/known_hosts
 
       - name: Sync server code
-        env:
-          EC2_USER: ${{ secrets.EC2_USERNAME }}
-          EC2_HOST: ${{ secrets.EC2_HOST }}
-          EC2_WEB_ROOT: ${{ secrets.EC2_WEB_ROOT }}
         run: |
           rsync -avz --delete \
             --exclude='.git' \
@@ -73,19 +86,12 @@ jobs:
             ./ "$EC2_USER@$EC2_HOST:$EC2_WEB_ROOT/"
 
       - name: Sync built client
-        env:
-          EC2_USER: ${{ secrets.EC2_USERNAME }}
-          EC2_HOST: ${{ secrets.EC2_HOST }}
-          EC2_WEB_ROOT: ${{ secrets.EC2_WEB_ROOT }}
         run: |
           rsync -avz --delete \
             client/dist/ "$EC2_USER@$EC2_HOST:$EC2_WEB_ROOT/client/dist/"
 
       - name: Write server .env from secrets
         env:
-          EC2_USER: ${{ secrets.EC2_USERNAME }}
-          EC2_HOST: ${{ secrets.EC2_HOST }}
-          EC2_WEB_ROOT: ${{ secrets.EC2_WEB_ROOT }}
           MONGO_URI: ${{ secrets.MONGO_URI }}
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
           CLIENT_ORIGIN: ${{ secrets.CLIENT_ORIGIN }}
@@ -109,10 +115,6 @@ jobs:
           rm -f "$ENV_FILE"
 
       - name: Install server deps and restart PM2
-        env:
-          EC2_USER: ${{ secrets.EC2_USERNAME }}
-          EC2_HOST: ${{ secrets.EC2_HOST }}
-          EC2_WEB_ROOT: ${{ secrets.EC2_WEB_ROOT }}
         run: |
           ssh "$EC2_USER@$EC2_HOST" bash << EOF
             set -euo pipefail
@@ -124,9 +126,6 @@ jobs:
           EOF
 
       - name: Health probe
-        env:
-          EC2_USER: ${{ secrets.EC2_USERNAME }}
-          EC2_HOST: ${{ secrets.EC2_HOST }}
         run: |
           ssh "$EC2_USER@$EC2_HOST" bash << 'EOF'
             set -euo pipefail
