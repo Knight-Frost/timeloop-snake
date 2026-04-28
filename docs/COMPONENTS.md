@@ -1,6 +1,6 @@
 # Component Reference
 
-Full reference for every module in `src/`. Each section covers the class or object's public interface - what it exposes and how to use it.
+Full reference for every module in `client/public/game/src/`. Each section covers the class or object's public interface - what it exposes and how to use it.
 
 ---
 

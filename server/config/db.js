@@ -1,15 +1,15 @@
-const { Sequelize } = require('sequelize');
-require('dotenv').config();
+const mongoose = require('mongoose');
 
-const sequelize = new Sequelize(
-  process.env.DB_NAME,
-  process.env.DB_USER,
-  process.env.DB_PASS,
-  {
-    host: process.env.DB_HOST || 'localhost',
-    dialect: 'mysql',
-    logging: false
+async function connectDB() {
+  const uri = process.env.MONGO_URI;
+  if (!uri) {
+    throw new Error('MONGO_URI environment variable is not set');
   }
-);
+  mongoose.set('strictQuery', true);
+  await mongoose.connect(uri, {
+    serverSelectionTimeoutMS: 10000
+  });
+  console.log('MongoDB connected');
+}
 
-module.exports = { sequelize };
+module.exports = { connectDB, mongoose };

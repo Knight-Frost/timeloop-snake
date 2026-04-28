@@ -7,7 +7,7 @@ on:
 
 jobs:
   build:
-    name: Build
+    name: Build client
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -16,7 +16,9 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-          cache-dependency-path: client/package.json
+          cache-dependency-path: |
+            client/package-lock.json
+            server/package-lock.json
 
       - name: Install client dependencies
         run: npm ci
@@ -33,11 +35,10 @@ jobs:
           path: client/dist/
 
   deploy:
-    name: Deploy
+    name: Deploy to EC2
     runs-on: ubuntu-latest
     needs: build
     environment: production
-
     steps:
       - uses: actions/checkout@v4
 
@@ -60,6 +61,7 @@ jobs:
         env:
           EC2_USER: ${{ secrets.EC2_USERNAME }}
           EC2_HOST: ${{ secrets.EC2_HOST }}
+          EC2_WEB_ROOT: ${{ secrets.EC2_WEB_ROOT }}
         run: |
           rsync -avz --delete \
             --exclude='.git' \
@@ -68,32 +70,71 @@ jobs:
             --exclude='client/dist' \
             --exclude='.claude' \
             --exclude='.env' \
-            ./ "$EC2_USER@$EC2_HOST:/home/ubuntu/timeloop-snake/"
+            ./ "$EC2_USER@$EC2_HOST:$EC2_WEB_ROOT/"
 
       - name: Sync built client
         env:
           EC2_USER: ${{ secrets.EC2_USERNAME }}
           EC2_HOST: ${{ secrets.EC2_HOST }}
+          EC2_WEB_ROOT: ${{ secrets.EC2_WEB_ROOT }}
         run: |
           rsync -avz --delete \
-            client/dist/ "$EC2_USER@$EC2_HOST:/home/ubuntu/timeloop-snake/client/dist/"
+            client/dist/ "$EC2_USER@$EC2_HOST:$EC2_WEB_ROOT/client/dist/"
+
+      - name: Write server .env from secrets
+        env:
+          EC2_USER: ${{ secrets.EC2_USERNAME }}
+          EC2_HOST: ${{ secrets.EC2_HOST }}
+          EC2_WEB_ROOT: ${{ secrets.EC2_WEB_ROOT }}
+          MONGO_URI: ${{ secrets.MONGO_URI }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          CLIENT_ORIGIN: ${{ secrets.CLIENT_ORIGIN }}
+          ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
+          ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+        run: |
+          umask 077
+          ENV_FILE="$(mktemp)"
+          {
+            printf 'PORT=3000\n'
+            printf 'NODE_ENV=production\n'
+            printf 'MONGO_URI=%s\n' "$MONGO_URI"
+            printf 'JWT_SECRET=%s\n' "$JWT_SECRET"
+            printf 'CLIENT_ORIGIN=%s\n' "$CLIENT_ORIGIN"
+            printf 'ADMIN_EMAIL=%s\n' "$ADMIN_EMAIL"
+            printf 'ADMIN_PASSWORD=%s\n' "$ADMIN_PASSWORD"
+          } > "$ENV_FILE"
+          chmod 600 "$ENV_FILE"
+          scp -o StrictHostKeyChecking=no "$ENV_FILE" "$EC2_USER@$EC2_HOST:$EC2_WEB_ROOT/server/.env"
+          ssh "$EC2_USER@$EC2_HOST" "chmod 600 $EC2_WEB_ROOT/server/.env"
+          rm -f "$ENV_FILE"
 
       - name: Install server deps and restart PM2
         env:
           EC2_USER: ${{ secrets.EC2_USERNAME }}
           EC2_HOST: ${{ secrets.EC2_HOST }}
+          EC2_WEB_ROOT: ${{ secrets.EC2_WEB_ROOT }}
         run: |
-          ssh "$EC2_USER@$EC2_HOST" bash << 'EOF'
-            chmod -R o+rX /home/ubuntu/timeloop-snake/client/dist
-            cd /home/ubuntu/timeloop-snake/server
+          ssh "$EC2_USER@$EC2_HOST" bash << EOF
+            set -euo pipefail
+            chmod -R o+rX $EC2_WEB_ROOT/client/dist
+            cd $EC2_WEB_ROOT/server
             npm ci --omit=dev
-            pm2 restart timeloop-snake --update-env 2>/dev/null || pm2 start index.js --name timeloop-snake
+            pm2 startOrReload ecosystem.config.cjs --update-env
             pm2 save
           EOF
 
-      - name: Verify deployment
+      - name: Health probe
         env:
           EC2_USER: ${{ secrets.EC2_USERNAME }}
           EC2_HOST: ${{ secrets.EC2_HOST }}
         run: |
-          ssh "$EC2_USER@$EC2_HOST" "pm2 show timeloop-snake | grep -q 'online' && echo 'App is online' || (echo 'App is not running' && exit 1)"
+          ssh "$EC2_USER@$EC2_HOST" bash << 'EOF'
+            set -euo pipefail
+            for i in 1 2 3 4 5 6; do
+              if curl -fksS https://localhost/api/health | grep -q '"status":"ok"'; then
+                echo "Health probe ok"; exit 0
+              fi
+              echo "Waiting for server (attempt $i)..."; sleep 2
+            done
+            echo "Health probe failed"; pm2 logs timeloop-snake --lines 50 --nostream || true; exit 1
+          EOF

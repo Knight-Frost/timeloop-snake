@@ -1,0 +1,11 @@
+{
+  "name": "timeloop-snake",
+  "version": "1.0.0",
+  "private": true,
+  "description": "MERN-stack platform around a Canvas time-loop Snake game",
+  "scripts": {
+    "dev:full": "bash scripts/dev-setup.sh",
+    "stop": "bash scripts/stop.sh",
+    "reset": "bash scripts/reset.sh"
+  }
+}

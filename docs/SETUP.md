@@ -23,10 +23,14 @@ Running a local HTTP server solves this by serving files over `http://localhost`
 
 ## Running the Game
 
-**Step 1 - Navigate to the project folder**
+The game is embedded in the full Time Loop Snake platform. To run it as part of the platform, see the root SETUP_GUIDE.md - start the server and client and navigate to `/play`.
+
+To test the game module in isolation (without the platform), serve it directly from its directory:
+
+**Step 1 - Navigate to the game folder**
 
 ```bash
-cd /path/to/Game
+cd /path/to/timeloop-snake-/client/public/game
 ```
 
 **Step 2 - Start a local HTTP server**
@@ -77,10 +81,9 @@ If Python is not available, any static file server works:
 No files are generated or modified by running the game. The project is entirely static.
 
 ```
-Game/
+client/public/game/
 ├── index.html       Open this via the server - do not open directly
 ├── styles.css
-├── docs/
 └── src/
     ├── constants.js
     ├── inputHandler.js

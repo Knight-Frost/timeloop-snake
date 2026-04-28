@@ -22,16 +22,16 @@ No build tools. No package manager. The entire project is plain JavaScript (ES6 
 
 | File | Responsibility |
 |---|---|
-| `index.html` | Creates the canvas element and bootstraps the `Game` class |
-| `styles.css` | Centers the canvas on the page, adds neon border and glow |
-| `src/constants.js` | All configuration: grid dimensions, timing, colors, fonts, state names |
-| `src/inputHandler.js` | Listens for keyboard events, buffers direction inputs, exposes consume methods |
-| `src/recorder.js` | Accumulates per-tick snapshots of the snake, seals them into a recording |
-| `src/snake.js` | Manages the player's position array, direction, and growth |
-| `src/ghostSnake.js` | Holds a sealed recording and advances a playhead through it each tick |
-| `src/food.js` | Spawns food on random empty cells, drives the pulse animation counter |
-| `src/renderer.js` | Draws everything onto the canvas - background, grid, snake, ghosts, food, HUD |
-| `src/game.js` | Game loop, state machine, tick logic, ghost spawning - the central coordinator |
+| `client/public/game/index.html` | Creates the canvas element and bootstraps the `Game` class |
+| `client/public/game/styles.css` | Centers the canvas on the page, adds neon border and glow |
+| `client/public/game/src/constants.js` | All configuration: grid dimensions, timing, colors, fonts, state names |
+| `client/public/game/src/inputHandler.js` | Listens for keyboard events, buffers direction inputs, exposes consume methods |
+| `client/public/game/src/recorder.js` | Accumulates per-tick snapshots of the snake, seals them into a recording |
+| `client/public/game/src/snake.js` | Manages the player's position array, direction, and growth |
+| `client/public/game/src/ghostSnake.js` | Holds a sealed recording and advances a playhead through it each tick |
+| `client/public/game/src/food.js` | Spawns food on random empty cells, drives the pulse animation counter |
+| `client/public/game/src/renderer.js` | Draws everything onto the canvas - background, grid, snake, ghosts, food, HUD |
+| `client/public/game/src/game.js` | Game loop, state machine, tick logic, ghost spawning - the central coordinator |
 
 ---
 
@@ -39,17 +39,17 @@ No build tools. No package manager. The entire project is plain JavaScript (ES6 
 
 ### Change the snake speed
 
-In `src/constants.js`:
+In `client/public/game/src/constants.js`:
 
 ```js
 export const TICK_MS = 140;  // milliseconds between steps - lower is faster
 ```
 
-A value around 80–100 is noticeably fast. 200+ starts to feel slow.
+A value around 80-100 is noticeably fast. 200+ starts to feel slow.
 
 ### Change how often ghosts spawn
 
-In `src/constants.js`:
+In `client/public/game/src/constants.js`:
 
 ```js
 export const LOOP_TICKS = 100;  // ticks per loop interval
@@ -59,7 +59,7 @@ At 140ms per tick, 100 ticks is approximately 14 seconds. Reduce to 60 for a mor
 
 ### Change the maximum number of simultaneous ghosts
 
-In `src/constants.js`:
+In `client/public/game/src/constants.js`:
 
 ```js
 export const MAX_GHOSTS = 4;
@@ -69,7 +69,7 @@ When this limit is reached, the oldest ghost is dropped when a new one spawns.
 
 ### Change ghost colors
 
-In `src/constants.js`, edit the `ghostPalette` array:
+In `client/public/game/src/constants.js`, edit the `ghostPalette` array:
 
 ```js
 ghostPalette: [
@@ -84,7 +84,7 @@ ghostPalette: [
 
 ### Change the grid size
 
-In `src/constants.js`:
+In `client/public/game/src/constants.js`:
 
 ```js
 export const GRID_COLS = 30;
@@ -100,7 +100,7 @@ export const CELL_SIZE = 28;  // pixels per cell
 
 ### Example: add a score multiplier
 
-**Step 1 - Add the state to `game.js`**
+**Step 1 - Add the state to `client/public/game/src/game.js`**
 
 ```js
 this.multiplier = 1;
@@ -122,7 +122,7 @@ if (this.food.isEatenBy(this.snake)) {
 this.renderer.drawGame(this.snake, this.ghosts, this.food, this.score, this.loopTick, this.spawnFlash, this.multiplier);
 ```
 
-**Step 4 - Display it in `renderer.js._drawHUD()`**
+**Step 4 - Display it in `client/public/game/src/renderer.js._drawHUD()`**
 
 Add a parameter and draw the value using the existing `ctx.fillText` pattern.
 
@@ -170,7 +170,7 @@ for (const ghost of this.ghosts) {
 
 ## Adding a New Screen or State
 
-**Step 1 - Add the state name to `constants.js`**
+**Step 1 - Add the state name to `client/public/game/src/constants.js`**
 
 ```js
 export const STATE = {
@@ -182,7 +182,7 @@ export const STATE = {
 };
 ```
 
-**Step 2 - Handle transitions in `game.js._handleStateInput()`**
+**Step 2 - Handle transitions in `client/public/game/src/game.js._handleStateInput()`**
 
 ```js
 case STATE.MY_NEW_STATE:
@@ -190,7 +190,7 @@ case STATE.MY_NEW_STATE:
   break;
 ```
 
-**Step 3 - Add a draw method to `renderer.js`**
+**Step 3 - Add a draw method to `client/public/game/src/renderer.js`**
 
 ```js
 drawMyNewScreen() {
@@ -199,7 +199,7 @@ drawMyNewScreen() {
 }
 ```
 
-**Step 4 - Call it from `game.js._render()`**
+**Step 4 - Call it from `client/public/game/src/game.js._render()`**
 
 ```js
 case STATE.MY_NEW_STATE:

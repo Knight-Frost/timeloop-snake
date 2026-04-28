@@ -30,16 +30,7 @@ Classic Snake ends when you run into a wall or your own tail. In Time Loop Snake
 
 ## Quick Start
 
-**Requirements:** A modern browser (Chrome, Firefox, Safari, Edge) and Python 3.
-
-```
-cd /path/to/Game
-python3 -m http.server 8765
-```
-
-Open `http://localhost:8765` in a browser. Press Enter or Space to begin.
-
-A local HTTP server is required because the game uses ES6 modules, which browsers block when loading from the filesystem directly. See [SETUP.md](SETUP.md) for full instructions.
+These docs cover the standalone Canvas game module that lives at `client/public/game/` inside the Time Loop Snake platform. To run the full platform locally see the root SETUP_GUIDE.md. The game itself is served as static assets by Vite in development and Nginx in production. It can also be opened standalone by running a local HTTP server in `client/public/game/` (`python3 -m http.server 8765`) and visiting `http://localhost:8765`.
 
 ---
 
@@ -57,19 +48,18 @@ A local HTTP server is required because the game uses ES6 modules, which browser
 ## Project Structure
 
 ```
-Game/
-├── index.html          Entry point
-├── styles.css          Page and canvas styling
-├── docs/               Documentation (this folder)
+client/public/game/
+├── index.html
+├── styles.css
 └── src/
-    ├── constants.js    All configuration values
-    ├── inputHandler.js Keyboard input with direction queue
-    ├── recorder.js     Records movement snapshots each tick
-    ├── snake.js        Player snake logic
-    ├── ghostSnake.js   Ghost replay playback
-    ├── food.js         Food spawning and animation
-    ├── renderer.js     All canvas drawing
-    └── game.js         Main loop, state machine, coordination
+    ├── constants.js
+    ├── inputHandler.js
+    ├── recorder.js
+    ├── snake.js
+    ├── ghostSnake.js
+    ├── food.js
+    ├── renderer.js
+    └── game.js
 ```
 
 ---

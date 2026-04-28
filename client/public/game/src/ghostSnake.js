@@ -12,17 +12,11 @@ export class GhostSnake {
     this.isFinished  = recording.length === 0;
   }
 
-  // Advance one tick: mirrors the same cadence as the player
+  // Advance one tick: mirrors the same cadence as the player.
+  // Recording loops so the ghost persists until evicted by MAX_GHOSTS.
   step() {
     if (this.isFinished) return;
-
-    this.playhead++;
-
-    if (this.playhead >= this.recording.length) {
-      this.isFinished = true;
-      return;
-    }
-
+    this.playhead = (this.playhead + 1) % this.recording.length;
     this.positions = this.recording[this.playhead].positions;
   }
 

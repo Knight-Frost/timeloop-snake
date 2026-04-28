@@ -175,28 +175,28 @@ The growth is deferred. `grow()` increments `_pendingGrowth`. On the next `step(
 ## Component Dependency Map
 
 ```
-constants.js  <── imported by everything (no dependencies itself)
+client/public/game/src/constants.js  <── imported by everything (no dependencies itself)
 
-inputHandler.js
+client/public/game/src/inputHandler.js
   └── constants.js (OPPOSITE)
 
-snake.js
+client/public/game/src/snake.js
   └── constants.js (DIR, GRID_COLS, GRID_ROWS)
 
-recorder.js
+client/public/game/src/recorder.js
   └── (no imports)
 
-ghostSnake.js
-  └── (no imports — receives recording data, not module references)
+client/public/game/src/ghostSnake.js
+  └── (no imports - receives recording data, not module references)
 
-food.js
+client/public/game/src/food.js
   └── constants.js (GRID_COLS, GRID_ROWS)
 
-renderer.js
+client/public/game/src/renderer.js
   └── constants.js (CELL_SIZE, BOARD_WIDTH, BOARD_HEIGHT, GRID_COLS,
                     GRID_ROWS, COLORS, FONTS, LOOP_TICKS)
 
-game.js
+client/public/game/src/game.js
   └── constants.js (STATE, TICK_MS, LOOP_TICKS, MAX_GHOSTS)
   └── snake.js
   └── ghostSnake.js

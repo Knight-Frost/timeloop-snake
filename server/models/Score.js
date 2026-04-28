@@ -1,21 +1,20 @@
-const { DataTypes } = require('sequelize');
-const { sequelize } = require('../config/db');
-const { User } = require('./User');
+const mongoose = require('mongoose');
 
-const Score = sequelize.define('Score', {
-  score: {
-    type: DataTypes.INTEGER,
-    allowNull: false,
-    defaultValue: 0
+const scoreSchema = new mongoose.Schema(
+  {
+    score: { type: Number, required: true, min: 0, default: 0 },
+    loops_survived: { type: Number, required: true, min: 0, default: 0 },
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
+      index: true
+    }
   },
-  loops_survived: {
-    type: DataTypes.INTEGER,
-    allowNull: false,
-    defaultValue: 0
-  }
-});
+  { timestamps: true, versionKey: false }
+);
 
-Score.belongsTo(User, { foreignKey: 'userId', as: 'user' });
-User.hasMany(Score, { foreignKey: 'userId' });
+scoreSchema.index({ score: -1 });
 
+const Score = mongoose.model('Score', scoreSchema);
 module.exports = { Score };

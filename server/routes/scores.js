@@ -1,58 +1,62 @@
 const { Router } = require('express');
 const { protect } = require('../middleware/protect');
+const { asyncHandler } = require('../middleware/asyncHandler');
+const { validateObjectId } = require('../middleware/validateObjectId');
 const { Score } = require('../models/Score');
-const { User } = require('../models/User');
 
 const router = Router();
 
-// Public leaderboard
-router.get('/', async (req, res) => {
-  try {
-    const scores = await Score.findAll({
-      include: [{ model: User, as: 'user', attributes: ['email'] }],
-      order: [['score', 'DESC']],
-      limit: 20
-    });
-    res.json(scores);
-  } catch {
-    res.status(500).json({ error: 'Server error' });
-  }
-});
+router.get('/', asyncHandler(async (_req, res) => {
+  const scores = await Score.find()
+    .sort({ score: -1 })
+    .limit(20)
+    .populate('user', 'email')
+    .lean();
+  res.json(scores);
+}));
 
-// Submit a score (protected)
-router.post('/', protect, async (req, res) => {
-  // Destructure only the intended fields - never pass full req.body
+router.post('/', protect, asyncHandler(async (req, res) => {
   const { score, loops_survived } = req.body;
-
   if (typeof score !== 'number' || typeof loops_survived !== 'number') {
     return res.status(400).json({ error: 'Invalid score data' });
   }
+  if (!Number.isFinite(score) || !Number.isFinite(loops_survived)) {
+    return res.status(400).json({ error: 'Invalid score data' });
+  }
+  const newScore = Math.max(0, Math.floor(score));
+  const newLoops = Math.max(0, Math.floor(loops_survived));
 
-  try {
+  // One Score document per user. Keep only the personal best.
+  const existing = await Score.findOne({ user: req.user._id }).sort({ score: -1 });
+
+  if (!existing) {
     const entry = await Score.create({
-      score: Math.max(0, Math.floor(score)),
-      loops_survived: Math.max(0, Math.floor(loops_survived)),
-      userId: req.user.id
+      score: newScore,
+      loops_survived: newLoops,
+      user: req.user._id
     });
-    res.status(201).json(entry);
-  } catch {
-    res.status(500).json({ error: 'Server error' });
+    return res.status(201).json(entry);
   }
-});
 
-// Delete own score (ownership enforced)
-router.delete('/:id', protect, async (req, res) => {
-  try {
-    const entry = await Score.findByPk(req.params.id);
-    // Return 404 whether it doesn't exist or isn't owned - prevents enumeration
-    if (!entry || entry.userId !== req.user.id) {
-      return res.status(404).json({ error: 'Score not found' });
-    }
-    await entry.destroy();
-    res.json({ message: 'Deleted' });
-  } catch {
-    res.status(500).json({ error: 'Server error' });
+  if (newScore > existing.score) {
+    existing.score = newScore;
+    existing.loops_survived = newLoops;
+    await existing.save();
   }
-});
+
+  // Lazy migration: collapse any legacy duplicates into the single PB row.
+  await Score.deleteMany({ user: req.user._id, _id: { $ne: existing._id } });
+
+  res.json(existing);
+}));
+
+router.delete('/:id', protect, validateObjectId('id'), asyncHandler(async (req, res) => {
+  const entry = await Score.findById(req.params.id);
+  if (!entry || entry.user.toString() !== req.user._id.toString()) {
+    return res.status(404).json({ error: 'Score not found' });
+  }
+  await entry.deleteOne();
+  res.json({ message: 'Deleted' });
+}));
 
 module.exports = router;

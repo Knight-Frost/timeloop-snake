@@ -42,14 +42,14 @@ Failed to load module script
 
 1. Open the browser developer tools (F12 or right-click → Inspect)
 2. Check the Console tab for any JavaScript errors
-3. Check the Network tab - confirm `game.js`, `renderer.js`, and other `src/` files are loading with status 200
+3. Check the Network tab - confirm `game.js`, `renderer.js`, and other `client/public/game/src/` files are loading with status 200
 
 **Common causes:**
 
 | Cause | Fix |
 |---|---|
 | The server was started in the wrong directory | Stop the server, `cd` into the folder containing `index.html`, then restart |
-| A file is missing from `src/` | Compare against the file list in [README.md](README.md) |
+| A file is missing from `client/public/game/src/` | Compare against the file list in [README.md](README.md) |
 | A syntax error in a source file | The console will point to the file and line |
 
 ---
@@ -75,7 +75,7 @@ Failed to load module script
 
 **Cause:** The `TICK_MS` constant controls speed.
 
-**Solution:** Open `src/constants.js` and adjust:
+**Solution:** Open `client/public/game/src/constants.js` and adjust:
 
 ```js
 export const TICK_MS = 140;  // increase to slow down, decrease to speed up
@@ -105,7 +105,7 @@ Reasonable range: 80ms (fast) to 250ms (slow).
 
 **Cause:** Ghost alpha or color values in `constants.js` may have been changed to invisible values.
 
-**Solution:** Restore the default ghost palette in `src/constants.js`:
+**Solution:** Restore the default ghost palette in `client/public/game/src/constants.js`:
 
 ```js
 ghostPalette: [

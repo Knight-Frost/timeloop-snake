@@ -40,7 +40,7 @@ export default function Leaderboard() {
           </thead>
           <tbody>
             {scores.map((entry, i) => (
-              <tr key={entry.id}>
+              <tr key={entry._id}>
                 <td style={{ ...s.td, ...s.rank }}>{i + 1}</td>
                 <td style={s.td}>{entry.user?.email?.split('@')[0] ?? 'unknown'}</td>
                 <td style={s.td}>{entry.score}</td>

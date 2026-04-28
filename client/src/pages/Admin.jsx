@@ -20,19 +20,19 @@ export default function Admin() {
 
   useEffect(() => {
     authFetch('/api/admin/users').then(r => r.json()).then(setUsers);
-    fetch('/api/scores').then(r => r.json()).then(setScores);
+    authFetch('/api/scores').then(r => r.json()).then(setScores);
   }, []);
 
   async function deleteUser(id) {
     if (!confirm('Delete this user?')) return;
     await authFetch(`/api/admin/users/${id}`, { method: 'DELETE' });
-    setUsers(u => u.filter(x => x.id !== id));
+    setUsers(u => u.filter(x => x._id !== id));
   }
 
   async function deleteScore(id) {
     if (!confirm('Delete this score?')) return;
     await authFetch(`/api/admin/scores/${id}`, { method: 'DELETE' });
-    setScores(s => s.filter(x => x.id !== id));
+    setScores(s => s.filter(x => x._id !== id));
   }
 
   return (
@@ -51,11 +51,11 @@ export default function Admin() {
             </tr></thead>
             <tbody>
               {users.map(u => (
-                <tr key={u.id}>
+                <tr key={u._id}>
                   <td style={s.td}>{u.email}</td>
                   <td style={s.td}>{u.role}</td>
                   <td style={s.td}>{new Date(u.createdAt).toLocaleDateString()}</td>
-                  <td style={s.td}><button style={s.delBtn} onClick={() => deleteUser(u.id)}>Delete</button></td>
+                  <td style={s.td}><button style={s.delBtn} onClick={() => deleteUser(u._id)}>Delete</button></td>
                 </tr>
               ))}
             </tbody>
@@ -75,11 +75,11 @@ export default function Admin() {
             </tr></thead>
             <tbody>
               {scores.map(entry => (
-                <tr key={entry.id}>
+                <tr key={entry._id}>
                   <td style={s.td}>{entry.user?.email?.split('@')[0] ?? '-'}</td>
                   <td style={s.td}>{entry.score}</td>
                   <td style={s.td}>{entry.loops_survived}</td>
-                  <td style={s.td}><button style={s.delBtn} onClick={() => deleteScore(entry.id)}>Delete</button></td>
+                  <td style={s.td}><button style={s.delBtn} onClick={() => deleteScore(entry._id)}>Delete</button></td>
                 </tr>
               ))}
             </tbody>

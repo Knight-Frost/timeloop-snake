@@ -6,14 +6,10 @@ async function protect(req, res, next) {
   if (!auth || !auth.startsWith('Bearer ')) {
     return res.status(401).json({ error: 'Not authenticated' });
   }
-
   const token = auth.split(' ')[1];
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    // Always fetch role from DB - never trust the JWT payload for role
-    const user = await User.findByPk(decoded.id, {
-      attributes: ['id', 'email', 'role']
-    });
+    const user = await User.findById(decoded.id).select('email role');
     if (!user) return res.status(401).json({ error: 'User not found' });
     req.user = user;
     next();
