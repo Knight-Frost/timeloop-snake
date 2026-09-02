@@ -91,7 +91,7 @@ pm2 -v
 
 ```bash
 mkdir -p /home/ubuntu/timeloop-snake
-git clone https://github.com/<your-username>/timeloop-snake-.git /home/ubuntu/timeloop-snake
+git clone https://github.com/Knight-Frost/timeloop-snake.git /home/ubuntu/timeloop-snake
 ```
 
 If the repository is private, set up a GitHub deploy key or use HTTPS with a personal access token before running this step.

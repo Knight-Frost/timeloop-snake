@@ -34,8 +34,8 @@ This page is for anyone who just wants to run the project on their own machine. 
 ### Step 1. Get the code
 
 ```bash
-git clone https://github.com/<your-username>/timeloop-snake-.git
-cd timeloop-snake-
+git clone https://github.com/Knight-Frost/timeloop-snake.git
+cd timeloop-snake
 ```
 
 ### Step 2. Run the setup script

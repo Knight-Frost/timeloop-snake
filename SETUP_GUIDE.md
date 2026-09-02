@@ -19,8 +19,8 @@ The fastest way to run the project locally is the bundled setup script. It check
 ### Step 1. Clone and enter the repository
 
 ```bash
-git clone https://github.com/<your-username>/timeloop-snake-.git
-cd timeloop-snake-
+git clone https://github.com/Knight-Frost/timeloop-snake.git
+cd timeloop-snake
 ```
 
 ### Step 2. Run the setup script for the first time
@@ -93,8 +93,8 @@ If you would rather walk through the setup manually, continue reading the sectio
 ## 1. Clone the repository
 
 ```bash
-git clone https://github.com/<your-username>/timeloop-snake-.git
-cd timeloop-snake-
+git clone https://github.com/Knight-Frost/timeloop-snake.git
+cd timeloop-snake
 ```
 
 ## 2. Configure server environment

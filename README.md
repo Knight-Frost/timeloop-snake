@@ -1,20 +1,18 @@
 # Time Loop Snake
 
-A MERN-stack platform built around a Canvas-based Snake game with one twist: every 14 seconds, a ghost of your past self spawns on the board and replays your exact moves. The platform layers accounts, authenticated score submission, a public leaderboard, and an admin panel on top of that standalone game, turning a single-player experiment into a full web application.
+Every 14 seconds, a ghost of your own past run spawns on the board and replays your exact moves, step for step. The longer you survive, the more of your own history is out there working against you. Time Loop Snake is a Canvas-based Snake game built around that one twist, with a MERN-stack platform layered on top: accounts, authenticated score submission, a public leaderboard, and an admin panel, turning a single-player experiment into a full web application.
 
-## Live demo
+## Deployment history
 
-Live URL: https://your-domain-or-ec2-ip
-
-Replace with your deployed URL before submission.
+This project was deployed to a live AWS EC2 instance behind Nginx, with PM2 supervising the Express process and a GitHub Actions pipeline deploying automatically on every push to `main`. That instance is no longer running, so there is currently no public URL. The deployment steps are documented in [DEPLOYMENT_GUIDE_EC2.md](DEPLOYMENT_GUIDE_EC2.md) if you want to reproduce it.
 
 ## Quick Start (One Command)
 
 For anyone who just wants to run it locally:
 
 ```bash
-git clone https://github.com/<your-username>/timeloop-snake-.git
-cd timeloop-snake-
+git clone https://github.com/Knight-Frost/timeloop-snake.git
+cd timeloop-snake
 npm run dev:full
 ```
 
@@ -44,7 +42,7 @@ Detailed walkthrough including troubleshooting: [SETUP_GUIDE.md](SETUP_GUIDE.md#
 - MongoDB Atlas via Mongoose 8 with validated schemas and indexes
 - Public leaderboard, authenticated score submission, admin user/score management
 - Self-contained Canvas mini-game embedded in /play
-- Production deploy on AWS EC2 behind Nginx with HTTPS, PM2 process supervision, and GitHub Actions CI/CD
+- Previously deployed to AWS EC2 behind Nginx, with PM2 process supervision and GitHub Actions CI/CD (see Deployment history above)
 
 ## Tech stack
 
@@ -55,16 +53,16 @@ Detailed walkthrough including troubleshooting: [SETUP_GUIDE.md](SETUP_GUIDE.md#
 | Database | MongoDB Atlas, Mongoose 8 |
 | Auth | JWT (jsonwebtoken), bcryptjs (12 rounds) |
 | Security | helmet, CSP, HSTS, CORS allowlist, express-rate-limit, express-mongo-sanitize, body limit 10kb |
-| Hosting | AWS EC2 Ubuntu, Nginx reverse proxy, PM2 |
-| CI/CD | GitHub Actions deploy on push to main |
+| Hosting (previously) | AWS EC2 Ubuntu, Nginx reverse proxy, PM2 |
+| CI/CD | GitHub Actions, deployed on push to main |
 
 ## Manual Setup (alternative)
 
 1. Clone the repo.
 
 ```bash
-git clone https://github.com/<your-username>/timeloop-snake-.git
-cd timeloop-snake-
+git clone https://github.com/Knight-Frost/timeloop-snake.git
+cd timeloop-snake
 ```
 
 2. Install and start the client.
@@ -85,7 +83,7 @@ npm install
 npm run dev
 ```
 
-For full local dev setup see SETUP_GUIDE.md. For production EC2 deploy see DEPLOYMENT_GUIDE_EC2.md. For system architecture see SYSTEM_ARCHITECTURE.md.
+For full local dev setup see SETUP_GUIDE.md. For the EC2 deployment steps see DEPLOYMENT_GUIDE_EC2.md. For system architecture see SYSTEM_ARCHITECTURE.md.
 
 ## Project layout
 
@@ -99,12 +97,12 @@ nginx.conf       Nginx reverse proxy and TLS configuration
 
 ## Documentation
 
-- [RUNNING.md](RUNNING.md) - Step-by-step run guide for graders and first-time users
+- [RUNNING.md](RUNNING.md) - Step-by-step run guide for first-time users
 - [SETUP_GUIDE.md](SETUP_GUIDE.md) - Local development setup
 - [SYSTEM_ARCHITECTURE.md](SYSTEM_ARCHITECTURE.md) - Architecture, data models, security controls
-- [DEPLOYMENT_GUIDE_EC2.md](DEPLOYMENT_GUIDE_EC2.md) - Step-by-step production deploy to AWS EC2
+- [DEPLOYMENT_GUIDE_EC2.md](DEPLOYMENT_GUIDE_EC2.md) - Step-by-step guide to deploying to AWS EC2
 - [docs/README.md](docs/README.md) - Canvas game module design
 
-## License
+## Origin
 
-This project is for educational use as part of a course assignment.
+This project started as a course assignment and grew into a full MERN platform beyond the original scope.
